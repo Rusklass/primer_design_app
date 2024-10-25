@@ -8,7 +8,7 @@ body {
 }
 
 header, footer {
-    background-color: #35424a;
+    background-color: #3b4042;
     color: #ffffff;
     padding: 20px 0;
     text-align: center;
@@ -24,7 +24,7 @@ header, footer {
 }
 
 h1, h2 {
-    color: #333333;
+    color: #4f90b8;
 }
 
 label {
@@ -40,7 +40,7 @@ input[type="text"], textarea {
 
 button {
     display: block;
-    background-color: #35424a;
+    background-color: #3b4042;
     color: #ffffff;
     padding: 10px 15px;
     border: none;
