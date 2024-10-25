@@ -1,0 +1,73 @@
+<!-- templates/result.html -->
+
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h2>Primer Design Results</h2>
+    <table>
+        <tr>
+            <th>miRNA Name</th>
+            <td>{{ results.miRNA_name }}</td>
+        </tr>
+        <tr>
+            <th>miRNA Sequence</th>
+            <td>{{ results.miRNA_sequence }}</td>
+        </tr>
+        <tr>
+            <th>cDNA Sequence</th>
+            <td>{{ results.cDNA_sequence }}</td>
+        </tr>
+        <tr>
+            <th>RT Primer</th>
+            <td style="word-break: break-all;">
+                <span style="color: #FF0000;">{{ results.rt_primer_3 }}</span>
+                <span style="color: #00AA00;">{{ results.random_nt_3 }}</span>
+                <span style="color: #0000FF;">{{ results.hairpin }}</span>
+                <span style="color: #FFA500;">{{ results.random_nt_5 }}</span>
+                <span style="color: #800080;">{{ results.rt_primer_5 }}</span>
+            </td>
+        </tr>
+        <tr>
+            <th>RT Primer Tm</th>
+            <td>{{ results.RT_primer_Tm }}</td>
+        </tr>
+        <tr>
+            <th>RT Primer GC Content</th>
+            <td>{{ results.RT_primer_GC }}</td>
+        </tr>
+        <tr>
+            <th>Forward Primer</th>
+            <td>{{ results.Forward_primer }}</td>
+        </tr>
+        <tr>
+            <th>Forward Primer Tm</th>
+            <td>{{ results.Forward_primer_Tm }}</td>
+        </tr>
+        <tr>
+            <th>Forward Primer GC Content</th>
+            <td>{{ results.Forward_primer_GC }}</td>
+        </tr>
+        <tr>
+            <th>Reverse Primer</th>
+            <td>{{ results.Reverse_primer }}</td>
+        </tr>
+        <tr>
+            <th>Reverse Primer Tm</th>
+            <td>{{ results.Reverse_primer_Tm }}</td>
+        </tr>
+        <tr>
+            <th>Reverse Primer GC Content</th>
+            <td>{{ results.Reverse_primer_GC }}</td>
+        </tr>
+    </table>
+    <h3>RT Primer Components:</h3>
+    <ul>
+        <li><span style="color: #FF0000;">&#9608;</span> 3' Complementary Region ({{ results.rt_primer_3 }})</li>
+        <li><span style="color: #00AA00;">&#9608;</span> Random Nucleotides 3' ({{ results.random_nt_3 }})</li>
+        <li><span style="color: #0000FF;">&#9608;</span> Hairpin Structure ({{ results.hairpin }})</li>
+        <li><span style="color: #FFA500;">&#9608;</span> Random Nucleotides 5' ({{ results.random_nt_5 }})</li>
+        <li><span style="color: #800080;">&#9608;</span> 5' Complementary Region ({{ results.rt_primer_5 }})</li>
+    </ul>
+    <a href="{{ url_for('index') }}">Design Another Primer</a>
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+<!-- templates/index.html -->
+
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h2>Enter miRNA Information</h2>
+    {% if error %}
+    <div class="error">{{ error }}</div>
+    {% endif %}
+    <form method="post" id="primerForm">
+        <!-- Existing miRNA input fields -->
+        <label for="miRNA_name">miRNA Name (e.g., hsa-let-7b-5p):</label>
+        <input type="text" name="miRNA_name" id="miRNA_name" placeholder="Start typing..." autocomplete="off">
+
+        <label for="miRNA_sequence">miRNA Sequence (Optional if miRNA Name is selected):</label>
+        <textarea name="miRNA_sequence" id="miRNA_sequence" rows="4"></textarea>
+
+        <h3>Concentration Settings</h3>
+        <label for="Na_conc">Na<sup>+</sup> Concentration (mM):</label>
+        <input type="number" name="Na_conc" id="Na_conc" step="0.001" value="5" required>
+
+        <label for="Mg_conc">Mg<sup>2+</sup> Concentration (mM):</label>
+        <input type="number" name="Mg_conc" id="Mg_conc" step="0.001" value="3" required>
+
+        <label for="dNTPs_conc">dNTPs Concentration (mM):</label>
+        <input type="number" name="dNTPs_conc" id="dNTPs_conc" step="0.0001" value="0.5" required>
+
+        <label for="oligo_conc_rt">Oligo Concentration for RT Reaction (µM):</label>
+        <input type="number" name="oligo_conc_rt" id="oligo_conc_rt" step="0.0001" value="0.05" required>
+
+        <label for="oligo_conc_qpcr">Oligo Concentration for qPCR Reaction (µM):</label>
+        <input type="number" name="oligo_conc_qpcr" id="oligo_conc_qpcr" step="0.0001" value="0.4" required>
+
+        <button type="submit">Design Primers</button>
+    </form>
+</div>
+
+<!-- Include jQuery and jQuery UI -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    $('#miRNA_name').autocomplete({
+        source: function(request, response) {
+            $.ajax({
+                url: "{{ url_for('autocomplete') }}",
+                dataType: "json",
+                data: {
+                    q: request.term
+                },
+                success: function(data) {
+                    response(data.suggestions);
+                }
+            });
+        },
+        minLength: 1
+    });
+});
+</script>
+{% endblock %}
