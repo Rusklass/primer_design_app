@@ -279,5 +279,11 @@ def autocomplete():
                 suggestions.append(key)
     return jsonify({'suggestions': suggestions})
 
+# Date in home route
+@app.route('/')
+def home():
+    current_year = datetime.now().year  # Get the current year
+    return render_template('index.html', current_year=current_year)
+
 if __name__ == '__main__':
     app.run(debug=True)
