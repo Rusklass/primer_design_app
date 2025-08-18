@@ -1,173 +1,221 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container">
-    <h2>Enter miRNA Information</h2>
-    
-    {% if error %}
-    <div class="error">{{ error }}</div>
-    {% else %}
-    <div id="error" class="error" style="display:none;"></div>
-    {% endif %}
-    
-    <form method="post" id="primerForm">
-        <label for="miRNA_name">miRNA Name (e.g., hsa-let-7b-5p):</label>
-        <input type="text" name="miRNA_name" id="miRNA_name" placeholder="Start typing..." autocomplete="off">
+  <h2>Enter miRNA Information</h2>
 
-        <label for="miRNA_sequence">miRNA Sequence (Optional if miRNA Name is selected):</label>
-        <textarea name="miRNA_sequence" id="miRNA_sequence" rows="4"></textarea>
+  <style>
+    /* Tiny helpers just for this page */
+    .adv-row { display:flex; gap:1rem; flex-wrap:wrap; align-items:center; }
+    .short-input { width: 120px; }
+    .seed-group { display:flex; gap:.4rem; align-items:center; }
+    .icon-btn { padding:.2rem .4rem; border:1px solid #ccc; background:#fafafa; cursor:pointer; }
+    .check-inline { display:flex; align-items:center; gap:.4rem; }
+    .error { color:#b00020; margin:.5rem 0; }
+    .results pre { font-family:monospace; white-space:pre; }
+  </style>
 
-        <h3>Concentration Settings</h3>
+  <div id="error" class="error" style="display:none;"></div>
 
-        <label for="Na_conc">Na<sup>+</sup> Concentration (mM):</label>
-        <input type="number" name="Na_conc" step="0.001" value="5" required>
+  <form method="post" id="primerForm">
+    <label for="miRNA_name">miRNA Name (e.g., hsa-let-7b-5p):</label>
+    <input type="text" name="miRNA_name" id="miRNA_name" placeholder="Start typing..." autocomplete="off">
 
-        <label for="Mg_conc">Mg<sup>2+</sup> Concentration (mM):</label>
-        <input type="number" name="Mg_conc" step="0.001" value="3" required>
+    <label for="miRNA_sequence">miRNA Sequence (Optional if miRNA Name is selected):</label>
+    <textarea name="miRNA_sequence" id="miRNA_sequence" rows="4"></textarea>
 
-        <label for="dNTPs_conc">dNTPs Concentration (mM):</label>
-        <input type="number" name="dNTPs_conc" step="0.0001" value="0.5" required>
+    <h3>Concentration Settings</h3>
 
-        <label for="oligo_conc_rt">Oligo Concentration for RT Reaction (µM):</label>
-        <input type="number" name="oligo_conc_rt" step="0.0001" value="0.05" required>
+    <label for="Na_conc">Na<sup>+</sup> Concentration (mM):</label>
+    <input type="number" name="Na_conc" step="0.001" value="5" required>
 
-        <label for="oligo_conc_qpcr">Oligo Concentration for qPCR Reaction (µM):</label>
-        <input type="number" name="oligo_conc_qpcr" step="0.0001" value="0.4" required>
+    <label for="Mg_conc">Mg<sup>2+</sup> Concentration (mM):</label>
+    <input type="number" name="Mg_conc" step="0.001" value="3" required>
 
-        <button type="submit">Design Primers</button>
-    </form>
+    <label for="dNTPs_conc">dNTPs Concentration (mM):</label>
+    <input type="number" name="dNTPs_conc" step="0.0001" value="0.5" required>
 
-    <div id="result" style="margin-top:30px;">
-        {% if results %}
-        <h2>Primer Design Results</h2>
-        <table>
-            <tr><th>miRNA Name</th><td>{{ results.miRNA_name }}</td></tr>
-            <tr><th>miRNA Sequence</th><td>{{ results.miRNA_sequence }}</td></tr>
-            <tr><th>cDNA Sequence</th><td>{{ results.cDNA_sequence }}</td></tr>
-            <tr>
-                <th>RT Primer</th>
-                <td>
-                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
-                        <div>
-                            <span style="color: #FF0000;">{{ results.rt_primer_5 }}</span>
-                            <span style="color: #00AA00;">{{ results.random_nt_5 }}</span>
-                            <span style="color: #0000FF;">{{ results.hairpin }}</span>
-                            <span style="color: #FFA500;">{{ results.random_nt_3 }}</span>
-                            <span style="color: #800080;">{{ results.rt_primer_3 }}</span>
-                        </div>
-                        <button style="background: none; border: none; cursor: pointer;"
-                                onclick="copyToClipboard(this, '{{ results.RT_primer }}')">📋</button>
-                    </div>
-                </td>
-            </tr>
-            <tr><th>RT Primer Tm</th><td>{{ results.RT_primer_Tm }}</td></tr>
-            <tr><th>RT Primer GC Content</th><td>{{ results.RT_primer_GC }}</td></tr>
-            <tr>
-                <th>Forward Primer</th>
-                <td>
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <div>{{ results.Forward_primer }}</div>
-                        <button style="background: none; border: none; cursor: pointer;"
-                                onclick="copyToClipboard(this, '{{ results.Forward_primer }}')">📋</button>
-                    </div>
-                </td>
-            </tr>
-            <tr><th>Forward Primer Tm</th><td>{{ results.Forward_primer_Tm }}</td></tr>
-            <tr><th>Forward Primer GC Content</th><td>{{ results.Forward_primer_GC }}</td></tr>
-            <tr>
-                <th>Reverse Primer</th>
-                <td>
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <div>{{ results.Reverse_primer }}</div>
-                        <button style="background: none; border: none; cursor: pointer;"
-                                onclick="copyToClipboard(this, '{{ results.Reverse_primer }}')">📋</button>
-                    </div>
-                </td>
-            </tr>
-            <tr><th>Reverse Primer Tm</th><td>{{ results.Reverse_primer_Tm }}</td></tr>
-            <tr><th>Reverse Primer GC Content</th><td>{{ results.Reverse_primer_GC }}</td></tr>
-        </table>
+    <label for="oligo_conc_rt">Oligo Concentration for RT Reaction (µM):</label>
+    <input type="number" name="oligo_conc_rt" step="0.0001" value="0.05" required>
 
-        <h3>RT Primer Components:</h3>
-        <ul>
-            <li><span style="color: #FF0000;">&#9608;</span> 5' Complementary Region ({{ results.rt_primer_5 }})</li>
-            <li><span style="color: #00AA00;">&#9608;</span> Random Nucleotides 5' ({{ results.random_nt_5 }})</li>
-            <li><span style="color: #0000FF;">&#9608;</span> Hairpin Structure ({{ results.hairpin }})</li>
-            <li><span style="color: #FFA500;">&#9608;</span> Random Nucleotides 3' ({{ results.random_nt_3 }})</li>
-            <li><span style="color: #800080;">&#9608;</span> 3' Complementary Region ({{ results.rt_primer_3 }})</li>
-        </ul>
-        {% endif %}
-    </div>
+    <label for="oligo_conc_qpcr">Oligo Concentration for qPCR Reaction (µM):</label>
+    <input type="number" name="oligo_conc_qpcr" step="0.0001" value="0.4" required>
 
-    {% if history %}
-    <div id="history" style="margin-top:50px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <a href="{{ url_for('download_csv') }}">
-                <button>⬇️ Download Last 10 as CSV</button>
-            </a>
+    <!-- ADVANCED OPTIONS (collapsed by default). All checkboxes OFF by default. -->
+    <details id="advDetails" style="margin-top:1rem;">
+      <summary style="cursor:pointer;"><strong>Advanced options</strong></summary>
+
+      <div class="adv-row" style="margin-top:.75rem;">
+        <label>ΔG min (kcal/mol)
+          <input type="number" step="0.1" name="dg_min" value="-14">
+        </label>
+        <label>ΔG max (kcal/mol)
+          <input type="number" step="0.1" name="dg_max" value="-9">
+        </label>
+
+        <div class="seed-group">
+          <label>Seed
+            <input type="text" name="seed" id="seedInput" class="short-input" value="13" placeholder="e.g. 13">
+          </label>
+          <button type="button" id="seedDice" class="icon-btn" title="Random seed">🎲</button>
         </div>
-    </div>
-    {% endif %}
+      </div>
+
+      <div class="adv-row">
+        <label class="check-inline"><input type="checkbox" name="randomize_seed"> Randomize seed</label>
+        <label class="check-inline"><input type="checkbox" name="auto_relax"> Auto-relax ΔG if no hits</label>
+        <label class="check-inline"><input type="checkbox" name="include_score"> Include score</label>
+      </div>
+
+      <div class="adv-row" style="margin-top:.5rem;">
+        <label class="check-inline"><input type="checkbox" name="include_rt_product"> Include RT product</label>
+        <label class="check-inline"><input type="checkbox" name="include_ascii"> Include ASCII duplex</label>
+        <label class="check-inline"><input type="checkbox" name="include_struct"> Include RT hairpin MFE</label>
+      </div>
+    </details>
+
+    <button type="submit" style="margin-top:1rem;">Design Primers</button>
+  </form>
+
+  <!-- Single-page results go here -->
+  <div id="results" class="results" style="margin-top:20px;"></div>
 </div>
 
+<!-- jQuery + jQuery UI (for autocomplete). Include the jQuery UI CSS in your base.html or here. -->
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js"></script>
 <script>
-    function copyToClipboard(button, text) {
+  function copyToClipboard(button, text) {
     navigator.clipboard.writeText(text).then(() => {
-        const original = button.innerHTML;
-        button.innerHTML = '✅';
-        setTimeout(() => button.innerHTML = original, 1000);
+      const original = button.innerHTML;
+      button.innerHTML = '✅';
+      setTimeout(() => button.innerHTML = original, 1000);
     });
-}
-</script>
-<script>
-$(function() {
+  }
+
+  $(function () {
+    // Autocomplete
     $('#miRNA_name').autocomplete({
-        minLength: 2,
-        source: function(request, response) {
-            $.get("{{ url_for('autocomplete') }}", { q: request.term }, function(data) {
-                response(data.suggestions.slice(0, 10));
-            });
+      source: function(request, response) {
+        $.ajax({
+          url: "{{ url_for('autocomplete') }}",
+          dataType: "json",
+          data: { q: request.term },
+          success: function(data) { response(data.suggestions); }
+        });
+      },
+      minLength: 1
+    });
+
+    // AJAX submit
+    $('#primerForm').on('submit', function (e) {
+      e.preventDefault();
+      const form = e.currentTarget;
+      const btn = $(form).find('button[type="submit"]');
+      btn.prop('disabled', true).text('Designing…');
+
+      fetch("{{ url_for('design') }}", {
+        method: "POST",
+        body: new FormData(form)
+      })
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || 'Request failed');
+        renderResults(data);
+      })
+      .catch(err => {
+        $('#results').html('<div class="error">'+ (err.message || 'Error') +'</div>');
+      })
+      .finally(() => {
+        btn.prop('disabled', false).text('Design Primers');
+      });
+    });
+
+    function renderResults(res) {
+      let html = `
+        <h2>Top RT Primer Designs</h2>
+        <p><strong>miRNA:</strong> ${escapeHtml(res.miRNA_name)}<br>
+           <strong>miRNA sequence (RNA):</strong> ${escapeHtml(res.miRNA_sequence)}<br>
+           <strong>cDNA (DNA):</strong> ${escapeHtml(res.cDNA_sequence)}<br>
+           <strong>ΔG window:</strong> [${res.dg_window[0]}, ${res.dg_window[1]}] kcal/mol<br>
+           <strong>Seed used:</strong> ${res.seed_used}</p>
+      `;
+
+      if (!res.candidates || !res.candidates.length) {
+        html += '<div class="error">No valid designs found under current constraints.</div>';
+        $('#results').html(html);
+        return;
+      }
+
+      html += '<ol>';
+      res.candidates.forEach(c => {
+        html += `
+          <li style="margin-bottom:1rem;">
+            <div><strong>RT primer:</strong> <span style="word-break:break-all;">${c.colored_html || ''}</span></div>
+            <div><em>RT Tm / GC:</em> ${c.RT_primer_Tm || 'N/A'}, ${c.RT_primer_GC || 'N/A'}</div>
+            <div><em>ΔG (5′):</em> ${c.dg5 || 'N/A'} &nbsp; <em>ΔG (3′):</em> ${c.dg3 || 'N/A'} &nbsp; <em>ΣΔG:</em> ${c.dg_sum || 'N/A'}</div>
+            <div><em>Forward primer:</em> ${c.Forward_primer || ''} (${c.Forward_primer_Tm || 'N/A'})</div>
+            <div><em>Reverse primer:</em> ${c.Reverse_primer || ''} (${c.Reverse_primer_Tm || 'N/A'})</div>
+            ${Object.prototype.hasOwnProperty.call(c,'rt_product')
+              ? `<div><em>RT product:</em> <span style="word-break:break-all;">${c.rt_product}</span></div>`
+              : ``}
+            ${Object.prototype.hasOwnProperty.call(c,'heterodimer_ascii')
+              ? `<pre>${c.heterodimer_ascii}</pre>`
+              : ``}
+            ${Object.prototype.hasOwnProperty.call(c,'rt_struct_42C')
+              ? `<div><em>RT hairpin @42°C:</em> ${c.rt_struct_42C} &nbsp; <em>MFE:</em> ${c.rt_mfe_42C || 'N/A'}</div>`
+              : ``}
+            ${Object.prototype.hasOwnProperty.call(c,'score')
+              ? `<div><em>Score:</em> ${c.score}</div>`
+              : ``}
+          </li>`;
+      });
+      html += '</ol>';
+      $('#results').html(html);
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, m =>
+        ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])
+      );
+    }
+
+    // Seed dice button -> fill random 32-bit seed
+    const seedBtn = document.getElementById('seedDice');
+    const seedInput = document.getElementById('seedInput');
+    if (seedBtn && seedInput) {
+      seedBtn.addEventListener('click', () => {
+        const buf = new Uint32Array(1);
+        (window.crypto || window.msCrypto).getRandomValues(buf);
+        seedInput.value = buf[0].toString();
+      });
+    }
+
+    // Remember Advanced panel open/closed state
+    document.addEventListener('DOMContentLoaded', () => {
+        const adv = document.getElementById('advDetails');
+        if (adv) {
+        const saved = localStorage.getItem('advOpen');
+        if (saved === '1') adv.open = true;
+        adv.addEventListener('toggle', () => {
+            localStorage.setItem('advOpen', adv.open ? '1' : '0');
+        });
+        }
+
+        // Optional UX: disable seed input when "Randomize seed" is checked
+        const randCb = document.querySelector('input[name="randomize_seed"]');
+        const seedInput = document.getElementById('seedInput');
+        const seedDice = document.getElementById('seedDice');
+        function syncSeedDisabled() {
+        const on = randCb && randCb.checked;
+        if (seedInput) seedInput.disabled = on;
+        if (seedDice) seedDice.disabled = on;
+        }
+        if (randCb) {
+        randCb.addEventListener('change', syncSeedDisabled);
+        syncSeedDisabled();
         }
     });
-
-    $('#primerForm').on('submit', function(e) {
-        e.preventDefault();
-        $('#error').hide().text('');
-        $.ajax({
-            url: '/',
-            method: 'POST',
-            data: $(this).serialize(),
-            success: function(response) {
-                const html = $(response);
-                const newResult = html.find('#result');
-                const newHistory = html.find('#history');
-
-                if ($('#result').length) {
-                    $('#result').replaceWith(newResult);
-                } else {
-                    $('#primerForm').after(newResult);
-                }
-
-                if ($('#history').length) {
-                    $('#history').replaceWith(newHistory);
-                } else {
-                    $('#result').after(newHistory);
-                }
-                const errorText = html.find('.error').text();
-
-                if (errorText) {
-                    $('#error').text(errorText).show();
-                } else {
-                    $('#result').html(resultContainer);
-                    $('#history').html(historyContainer);
-                }
-            },
-            error: function() {
-                $('#error').text('An unexpected error occurred.').show();
-            }
-        });
-    });
-});
+  });
 </script>
 {% endblock %}
