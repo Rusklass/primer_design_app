@@ -1,0 +1,21 @@
+<!-- templates/base.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Two-tailed RT-qPCR Primer Design</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Two-tailed RT-qPCR Primer Design Tool</h1>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
+        <p>&copy; {{ current_year }} Primer Design Tool by R. Klassen</p>
+    </footer>
+</body>
+</html>

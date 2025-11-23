@@ -1,0 +1,444 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <h2>Enter miRNA Information</h2>
+
+  <div id="error" class="error" style="display:none;"></div>
+
+  <form method="post" id="primerForm">
+    <label for="miRNA_name">miRNA Name (e.g., hsa-let-7b-5p):</label>
+    <input type="text" name="miRNA_name" id="miRNA_name" placeholder="Start typing..." autocomplete="off">
+
+    <label for="miRNA_sequence">miRNA Sequence (Optional if miRNA Name is selected):</label>
+    <textarea name="miRNA_sequence" id="miRNA_sequence" rows="4"></textarea>
+
+    <h3>Concentration Settings</h3>
+
+    <label for="Na_conc">Na<sup>+</sup> Concentration (mM):</label>
+    <input type="number" name="Na_conc" step="0.001" value="5" required>
+
+    <label for="Mg_conc">Mg<sup>2+</sup> Concentration (mM):</label>
+    <input type="number" name="Mg_conc" step="0.001" value="3" required>
+
+    <label for="dNTPs_conc">dNTPs Concentration (mM):</label>
+    <input type="number" name="dNTPs_conc" step="0.0001" value="0.5" required>
+
+    <label for="oligo_conc_rt">Oligo Concentration for RT Reaction (µM):</label>
+    <input type="number" name="oligo_conc_rt" step="0.0001" value="0.05" required>
+
+    <label for="oligo_conc_qpcr">Oligo Concentration for qPCR Reaction (µM):</label>
+    <input type="number" name="oligo_conc_qpcr" step="0.0001" value="0.4" required>
+
+    <!-- ADVANCED OPTIONS -->
+    <details id="advDetails" class="panel">
+      <summary>
+        <span class="panel-title">
+          <span class="chev">▸</span>
+          <strong>Advanced options</strong>
+        </span>
+        <span class="panel-actions">
+          <button type="button" class="btn-chip" id="themeToggle" title="Toggle light/dark">🌓</button>
+          <button type="button" class="btn-chip" id="advPresetLo" title="Relax a bit">Relax</button>
+          <button type="button" class="btn-chip" id="advPresetHi" title="Be stricter">Tighten</button>
+          <button type="button" class="btn-chip btn-primary" id="advReset" title="Reset fields">Reset</button>
+        </span>
+      </summary>
+
+      <div class="adv-wrap">
+
+        <!-- Energetics & seed -->
+        <div class="adv-group">
+          <h4>Energetics & seed</h4>
+
+          <!-- Row 1: ΔG min, ΔG max, ΣΔG max -->
+          <div class="adv-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;">
+            <div class="field" data-help="Minimum ΔG (more negative = stronger binding).">
+              <label>ΔG min</label>
+              <input type="number" step="0.1" name="dg_min" value="-14">
+            </div>
+            <div class="field" data-help="Maximum ΔG (upper bound of the window).">
+              <label>ΔG max</label>
+              <input type="number" step="0.1" name="dg_max" value="-8">
+            </div>
+            <div class="field" data-help="Maximum total ΔG across both ends.">
+              <label>ΣΔG max</label>
+              <input type="number" step="0.1" name="dg_sum_max" value="-20">
+            </div>
+          </div>
+
+          <!-- Row 2: seed, ΔG temperature -->
+          <div class="adv-grid"
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
+            <div class="field">
+              <label>Seed</label>
+              <div class="seed-inline">
+                <input type="text" name="seed" id="seedInput" value="1" placeholder="e.g. 1">
+                <button type="button" id="seedDice" class="icon-btn" title="Random seed">🎲</button>
+              </div>
+            </div>
+            <div class="field" data-help="Temperature used for ΔG calculations.">
+              <label>ΔG temp (°C)</label>
+              <input type="number" step="0.1" name="dg_temp_C" value="37">
+            </div>
+          </div>
+
+          <!-- Toggles -->
+          <div class="adv-grid" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <label class="switch"><input type="checkbox" name="randomize_seed"><span>Randomize seed</span></label>
+            <label class="switch"><input type="checkbox" name="auto_relax"><span>Auto-relax ΔG if no hits</span></label>
+            <label class="switch"><input type="checkbox" name="include_score"><span>Include score</span></label>
+          </div>
+        </div>
+
+        <!-- Search effort -->
+        <div class="adv-group">
+          <h4>Search effort</h4>
+          <div class="adv-grid" style="display: grid; grid-template-columns: 1fr; gap: 0.75rem;">
+            <div class="field" data-help="Attempts per hemiprobe pair. Higher = slower, potentially better.">
+              <label>Tries per pair</label>
+              <input type="number" min="1" max="2000" name="tries_per_pair" value="120">
+            </div>
+            <div class="field" data-help="Beam width per pair. Controls breadth of search.">
+              <label>Beam per pair</label>
+              <input type="number" min="1" max="50" name="beam_per_pair" value="3">
+            </div>
+            <div class="field" data-help="How many candidate outputs to return.">
+              <label>Outputs (Top N)</label>
+              <input type="number" min="1" max="20" name="top_n" value="5">
+            </div>
+          </div>
+          <!-- Extra output -->
+          <div style="margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
+            <h5 style="margin: 0 0 0.5rem 0; font-size: 0.85rem; color: var(--text-muted);">Extra Output</h5>
+            <div class="adv-grid" style="display: flex; flex-direction: column; gap: 0.5rem;">
+              <label class="switch"><input type="checkbox" name="include_rt_product"><span>RT product</span></label>
+              <label class="switch"><input type="checkbox" name="include_ascii"><span>ASCII duplex</span></label>
+              <label class="switch"><input type="checkbox" name="include_struct"><span>RT hairpin MFE</span></label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hemiprobe lengths & positions -->
+        <div class="adv-group">
+          <h4>Hemiprobe Config</h4>
+          <!-- Row 1: 5′ -->
+          <div class="adv-grid"
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <div class="field"><label>5′ len (min)</label><input type="number" min="3" name="l5_min" value="4"></div>
+            <div class="field"><label>5′ len (max)</label><input type="number" min="3" name="l5_max" value="8"></div>
+          </div>
+          <!-- Row 2: 3′ -->
+          <div class="adv-grid"
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <div class="field"><label>3′ len (min)</label><input type="number" min="3" name="l3_min" value="4"></div>
+            <div class="field"><label>3′ len (max)</label><input type="number" min="3" name="l3_max" value="8"></div>
+          </div>
+          <!-- Row 3: 5' Position -->
+          <div class="adv-grid"
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <div class="field" data-help="Start position of 5' hemiprobe (1-based index). Leave empty for any.">
+              <label>5′ start (min)</label>
+              <input type="number" min="1" name="p5_min" placeholder="Any">
+            </div>
+            <div class="field" data-help="Start position of 5' hemiprobe (1-based index). Leave empty for any.">
+              <label>5′ start (max)</label>
+              <input type="number" min="1" name="p5_max" placeholder="Any">
+            </div>
+          </div>
+          <!-- Row 4: 3' Position -->
+          <div class="adv-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="field" data-help="Start position of 3' hemiprobe (1-based index). Leave empty for any.">
+              <label>3′ start (min)</label>
+              <input type="number" min="1" name="p3_min" placeholder="Any">
+            </div>
+            <div class="field" data-help="Start position of 3' hemiprobe (1-based index). Leave empty for any.">
+              <label>3′ start (max)</label>
+              <input type="number" min="1" name="p3_max" placeholder="Any">
+            </div>
+          </div>
+        </div>
+
+        <!-- qPCR & Hairpin -->
+        <div class="adv-group">
+          <h4>qPCR & Hairpin</h4>
+          <!-- Row 1: Tm -->
+          <div class="adv-grid"
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <div class="field"><label>Tm min (°C)</label><input type="number" step="0.1" name="tm_lo" value="58"></div>
+            <div class="field"><label>Tm max (°C)</label><input type="number" step="0.1" name="tm_hi" value="65"></div>
+          </div>
+          <!-- Row 2: primer length -->
+          <div class="adv-grid"
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <div class="field"><label>Len min</label><input type="number" min="12" name="min_primer_len" value="16">
+            </div>
+            <div class="field"><label>Len max</label><input type="number" min="14" name="max_primer_len" value="25">
+            </div>
+          </div>
+          <!-- Row 3: hairpin -->
+          <div class="adv-grid"
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <div class="field"><label>Stem len</label><input type="text" name="stem_len" value="7-8"
+                placeholder="8 or 7-9"></div>
+            <div class="field"><label>Loop len</label><input type="text" name="loop_len" value="5"
+                placeholder="5 or 4-6"></div>
+          </div>
+          <!-- Row 4: random -->
+          <div class="adv-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="field"><label>Rand 5′</label><input type="text" name="rand5_len" value="8-10"
+                placeholder="8-10"></div>
+            <div class="field"><label>Rand 3′</label><input type="text" name="rand3_len" value="8-10"
+                placeholder="8-10"></div>
+          </div>
+        </div>
+
+        <!-- Specificity & Variants -->
+        <div class="adv-group" style="grid-column: 1 / -1;">
+          <h4>Specificity & Variants</h4>
+          <div class="field" style="width:100%;">
+            <label>IsomiR/Variant Sequences (one per line)</label>
+            <textarea name="variant_sequences" rows="3"
+              placeholder="Enter variant sequences to check cross-reactivity..."></textarea>
+          </div>
+        </div>
+
+      </div>
+    </details>
+
+    <button type="submit" class="primary-submit" style="margin-top:1rem;">Design Primers</button>
+  </form>
+
+  <!-- Single-page results go here -->
+  <div id="results" class="results" style="margin-top:20px;"></div>
+</div>
+
+<!-- jQuery + jQuery UI (for autocomplete). Include the jQuery UI CSS in your base.html or here. -->
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js"></script>
+<script>
+  function copyToClipboard(button, text) {
+    navigator.clipboard.writeText(text).then(() => {
+      const original = button.innerHTML;
+      button.innerHTML = '✅';
+      setTimeout(() => button.innerHTML = original, 1000);
+    });
+  }
+
+  $(function () {
+    // Autocomplete
+    $('#miRNA_name').autocomplete({
+      source: function (request, response) {
+        $.ajax({
+          url: "{{ url_for('main.autocomplete') }}",
+          dataType: "json",
+          data: { q: request.term },
+          success: function (data) { response(data.suggestions); }
+        });
+      },
+      minLength: 1
+    });
+
+    // AJAX submit
+    $('#primerForm').on('submit', function (e) {
+      e.preventDefault();
+      const form = e.currentTarget;
+      const btn = $(form).find('button[type="submit"]');
+      btn.prop('disabled', true).text('Thinking…');
+
+      fetch("{{ url_for('main.design') }}", {
+        method: "POST",
+        body: new FormData(form)
+      })
+        .then(async (r) => {
+          const contentType = r.headers.get("content-type");
+          if (contentType && contentType.indexOf("application/json") !== -1) {
+            const data = await r.json();
+            if (!r.ok) throw new Error(data.error || 'Request failed');
+            renderResults(data);
+          } else {
+            const text = await r.text();
+            throw new Error(`Server error (${r.status}): ${text.substring(0, 100)}...`);
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          $('#results').html('<div class="error">' + (err.message || 'Error') + '</div>');
+        })
+        .finally(() => {
+          btn.prop('disabled', false).text('Design Primers');
+        });
+    });
+
+    window.downloadCSV = function () {
+      const form = document.getElementById('primerForm');
+      const formData = new FormData(form);
+
+      fetch("{{ url_for('main.export_csv') }}", {
+        method: "POST",
+        body: formData
+      })
+        .then(res => {
+          if (!res.ok) throw new Error('Export failed');
+          return res.blob();
+        })
+        .then(blob => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = "primers.csv";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        })
+        .catch(err => alert(err.message));
+    };
+
+    function renderResults(res) {
+      let html = `
+        <h2>Top RT Primer Designs</h2>
+        <button type="button" class="btn-chip btn-primary" onclick="downloadCSV()" style="float:right; margin-top:-3rem;">Download CSV</button>
+        <p><strong>miRNA:</strong> ${escapeHtml(res.miRNA_name)}<br>
+        <strong>miRNA sequence (RNA):</strong> ${escapeHtml(res.miRNA_sequence)}<br>
+        <strong>cDNA (DNA):</strong> ${escapeHtml(res.cDNA_sequence)}<br>
+        <strong>ΔG window:</strong> [${res.dg_window[0]}, ${res.dg_window[1]}] kcal/mol<br>
+        <strong>Seed used:</strong> ${res.seed_used}</p>
+      `;
+
+      if (!res.candidates || !res.candidates.length) {
+        html += '<div class="error">No valid designs found under current constraints.</div>';
+        $('#results').html(html);
+        return;
+      }
+
+      if (res.advanced_used) {
+        const a = res.advanced_used;
+        html += `<details style="margin:.5rem 0;"><summary><b>Advanced used</b></summary>
+          <div>ΔG temp: ${a.dg_temp_C} °C; ΣΔG max: ${a.dg_sum_max}</div>
+          <div>Tries / Beam / Outputs: ${a.tries_per_pair} / ${a.beam_per_pair} / ${a.top_n}</div>
+          <div>3′ length: [${a.l3_range[0]}, ${a.l3_range[1]}]; 5′ length: [${a.l5_range[0]}, ${a.l5_range[1]}]</div>
+          <div>qPCR Tm: [${a.tm_window[0]}, ${a.tm_window[1]}] °C; primer length: ${a.min_primer_len}-${a.max_primer_len}</div>
+          <div>Stem/loop: ${a.stem_len}; Random5: ${a.rand5_len}; Random3: ${a.rand3_len}</div>
+        </details>`;
+      }
+
+      html += '<ol>';
+      res.candidates.forEach(c => {
+        html += `
+          <li style="margin-bottom:1rem;">
+            <div><strong>RT primer:</strong> <span style="word-break:break-all;">${c.colored_html || ''}</span></div>
+            <div><em>RT Tm / GC:</em> ${c.RT_primer_Tm || 'N/A'}, ${c.RT_primer_GC || 'N/A'}</div>
+            <div><em>Binding (5'):</em> ${c.binding_5 || 'N/A'} &nbsp; <em>Binding (3'):</em> ${c.binding_3 || 'N/A'}</div>
+            <div><em>ΔG (5′):</em> ${c.dg5 || 'N/A'} &nbsp; <em>ΔG (3′):</em> ${c.dg3 || 'N/A'} &nbsp; <em>ΣΔG:</em> ${c.dg_sum || 'N/A'}</div>
+            <div><em>Forward primer:</em> ${c.Forward_primer || ''} (${c.Forward_primer_Tm || 'N/A'})</div>
+            <div><em>Reverse primer:</em> ${c.Reverse_primer || ''} (${c.Reverse_primer_Tm || 'N/A'})</div>
+            ${Object.prototype.hasOwnProperty.call(c, 'rt_product')
+            ? `<div><em>RT product:</em> <span style="word-break:break-all;">${c.rt_product}</span></div>`
+            : ``}
+            ${Object.prototype.hasOwnProperty.call(c, 'heterodimer_ascii')
+            ? `<pre>${c.heterodimer_ascii}</pre>`
+            : ``}
+            ${Object.prototype.hasOwnProperty.call(c, 'rt_struct_42C')
+            ? `<div><em>RT hairpin @42°C:</em> ${c.rt_struct_42C} &nbsp; <em>MFE:</em> ${c.rt_mfe_42C || 'N/A'}</div>`
+            : ``}
+            ${c.cross_reactivity && c.cross_reactivity.length > 0
+            ? `<div style="margin-top:0.5rem; border-top:1px solid #eee; padding-top:0.5rem;">
+                   <strong>Cross-Reactivity Analysis:</strong>
+                   <ul style="font-size:0.9em; padding-left:1rem;">
+                     ${c.cross_reactivity.map(xr => `
+                       <li>
+                         Variant: <span style="font-family:monospace;">${escapeHtml(xr.variant)}</span><br>
+                         ${xr.error ? `<span class="error">${xr.error}</span>` :
+                `MFE: ${xr.mfe} kcal/mol, Structure: <span style="font-family:monospace;">${xr.struct}</span>`
+              }
+                       </li>
+                     `).join('')}
+                   </ul>
+                 </div>`
+            : ``}
+            ${Object.prototype.hasOwnProperty.call(c, 'score')
+            ? `<div><em>Score:</em> ${c.score}</div>`
+            : ``}
+          </li>`;
+      });
+      html += '</ol>';
+      $('#results').html(html);
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, m =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m])
+      );
+    }
+
+    // Seed dice button -> fill random 32-bit seed
+    const seedBtn = document.getElementById('seedDice');
+    const seedInputEl = document.getElementById('seedInput');
+    if (seedBtn && seedInputEl) {
+      seedBtn.addEventListener('click', () => {
+        const buf = new Uint32Array(1);
+        (window.crypto || window.msCrypto).getRandomValues(buf);
+        seedInputEl.value = buf[0].toString();
+      });
+    }
+
+    // Remember Advanced panel open/closed state + optional UX for seed disabling
+    document.addEventListener('DOMContentLoaded', () => {
+      const adv = document.getElementById('advDetails');
+      if (adv) {
+        const saved = localStorage.getItem('advOpen');
+        if (saved === '1') adv.open = true;
+        adv.addEventListener('toggle', () => {
+          localStorage.setItem('advOpen', adv.open ? '1' : '0');
+        });
+      }
+      const randCb = document.querySelector('input[name="randomize_seed"]');
+      const seedInput = document.getElementById('seedInput');
+      const seedDice = document.getElementById('seedDice');
+      function syncSeedDisabled() {
+        const on = randCb && randCb.checked;
+        if (seedInput) seedInput.disabled = on;
+        if (seedDice) seedDice.disabled = on;
+      }
+      if (randCb) {
+        randCb.addEventListener('change', syncSeedDisabled);
+        syncSeedDisabled();
+      }
+    });
+
+    // Reset only Advanced fields
+    document.getElementById('advReset')?.addEventListener('click', () => {
+      const adv = document.getElementById('advDetails');
+      const inputs = adv.querySelectorAll('input, textarea, select');
+      inputs.forEach(el => {
+        if (el.type === 'checkbox' || el.type === 'radio') el.checked = el.defaultChecked;
+        else el.value = el.defaultValue;
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+    });
+
+    // Quick presets
+    const setVal = (name, v) => { const el = document.querySelector(`[name="${name}"]`); if (el) el.value = v; };
+    document.getElementById('advPresetLo')?.addEventListener('click', () => {
+      setVal('dg_min', -13); setVal('dg_max', -7); setVal('dg_sum_max', -18);
+      setVal('tries_per_pair', 80); setVal('beam_per_pair', 3);
+    });
+    document.getElementById('advPresetHi')?.addEventListener('click', () => {
+      setVal('dg_min', -16); setVal('dg_max', -9); setVal('dg_sum_max', -24);
+      setVal('tries_per_pair', 160); setVal('beam_per_pair', 5);
+    });
+
+    // Theme toggle persists
+    (function () {
+      const root = document.documentElement;
+      const saved = localStorage.getItem('uiTheme');
+      if (saved === 'dark') root.classList.add('theme-dark');
+      document.getElementById('themeToggle')?.addEventListener('click', () => {
+        root.classList.toggle('theme-dark');
+        localStorage.setItem('uiTheme', root.classList.contains('theme-dark') ? 'dark' : 'light');
+      });
+    })();
+  });
+</script>
+{% endblock %}
