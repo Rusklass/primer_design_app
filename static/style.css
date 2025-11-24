@@ -1,0 +1,369 @@
+/* static/style.css */
+
+/* Base */
+:root {
+  --brand:#a3a2c0;
+  --text:#1b1c20;
+  --muted:#5e6272;
+  --surface:#ffffff;
+  --surface-alt:#f6f7fb;
+  --border:#e6e7ef;
+  --focus:color-mix(in oklab, var(--brand) 55%, white);
+  --radius:12px;
+  --shadow:0 6px 20px rgba(22,22,28,.06);
+}
+.theme-dark {
+  --text:#ececf2;
+  --muted:#c8c9d8;
+  --surface:#0f1015;
+  --surface-alt:#0b0c11;
+  --border:#2b2e3a;
+  --shadow:0 10px 28px rgba(0,0,0,.35);
+  --focus:color-mix(in oklab, var(--brand) 45%, black);
+}
+
+/* Make widths include padding + border everywhere */
+html { box-sizing: border-box; }
+*, *::before, *::after { box-sizing: inherit; }
+
+html, body {
+  height: 100%;
+}
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: var(--surface-alt);
+  color: var(--text);
+}
+
+header, footer {
+  background-color: var(--brand);
+  color: #ffffff;
+  padding: 20px 0;
+  text-align: center;
+}
+
+.container {
+  max-width: 980px;          /* was width: 80% / min(100%, 980px); */
+  width: 100%;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+h1, h2, h3, h4 {
+  color: var(--text);
+}
+
+label {
+  display: block;
+  margin-top: 10px;
+  color: var(--muted);
+}
+
+input[type="text"], textarea, input[type="number"] {
+  width: 100%;
+  max-width: 100%;   /* belts-and-braces */
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 10px;
+  outline: none;
+}
+input[type="text"]:focus,
+textarea:focus,
+input[type="number"]:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand) 18%, transparent);
+}
+
+/* Submit button only */
+button.primary-submit[type="submit"], button[type="submit"].primary-submit {
+  display: inline-block;
+  background-color: color-mix(in oklab, var(--brand) 24%, var(--surface));
+  color: var(--text);
+  padding: 10px 16px;
+  border: 1px solid var(--brand);
+  border-radius: 10px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+button.primary-submit[type="submit"]:hover {
+  background-color: color-mix(in oklab, var(--brand) 34%, var(--surface));
+}
+
+/* Do NOT style all buttons globally – chips have their own styles */
+
+/* Copy icon button */
+.copy-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1em;
+  padding: 0;
+  color: var(--text);
+}
+.copy-button:hover {
+  color: color-mix(in oklab, var(--brand) 50%, var(--text));
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+table th, table td {
+  padding: 10px;
+  border: 1px solid #dddddd20; /* subtle in dark too */
+}
+th, td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #dddddd20;
+}
+
+/* Errors */
+.error {
+  color: #b00020;
+  font-weight: bold;
+}
+
+/* Color spans for primer visualization (kept as-is) */
+.rt-primer-3 { color: #FF0000; }
+.random-nt-3 { color: #00AA00; }
+
+/* jQuery UI autocomplete (brand-aware) */
+.ui-autocomplete {
+  max-height: 200px;
+  background: color-mix(in oklab, var(--brand) 20%, var(--surface));
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 1000;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+/* ===== Advanced panel (from our redesign) ===== */
+details.panel{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+  transition:box-shadow .2s, border-color .2s, background .2s;
+}
+details.panel[open]{ box-shadow:var(--shadow); }
+details.panel > summary{
+  list-style:none;
+  display:flex; align-items:center; justify-content:space-between; gap:.75rem;
+  padding:.8rem 1rem; cursor:pointer; user-select:none;
+  background:var(--surface);
+  position:relative;
+  z-index:0;
+}
+details.panel > summary::-webkit-details-marker{ display:none; }
+
+.panel-title{ display:flex; align-items:center; gap:.6rem; font-weight:700; color:var(--text); }
+.chev{
+  inline-size:1.05rem; aspect-ratio:1; display:grid; place-items:center;
+  border:1px solid var(--border); border-radius:8px; font-size:.85rem;
+  background:var(--surface-alt); transition:transform .18s ease;
+  transform:rotate(-90deg);
+}
+details[open] .chev{ transform:rotate(0deg); }
+
+.panel-actions{ display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
+.btn-chip{
+  font:inherit; color:var(--text); background:var(--surface);
+  border:1px solid var(--border); padding:.35rem .6rem; border-radius:999px; cursor:pointer;
+}
+.btn-chip:hover{ background:var(--surface-alt); }
+.btn-primary{ border-color:var(--brand); background:color-mix(in oklab, var(--brand) 10%, var(--surface)); }
+.btn-primary:hover{ background:color-mix(in oklab, var(--brand) 18%, var(--surface)); }
+
+.adv-wrap{ padding:.2rem 1rem 1rem; display:grid; gap:2rem; }
+.adv-group{ padding-top:.6rem; }
+.adv-group + .adv-group{ border-top:1px solid var(--border); }
+.adv-group > h4{ margin:0 0 .6rem; font-size:.95rem; color:var(--muted); font-weight:700; }
+
+.adv-grid{
+  display:grid; 
+  gap: .8rem;
+  grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); /* was 240px */
+}
+
+.field{ display:flex; flex-direction:column; gap:.35rem; min-width:0; }
+.field label{ font-size:.9rem; color:var(--muted); }
+.field input[type="number"],
+.field input[type="text"],
+.field textarea{
+  padding:.5rem .6rem; 
+  border:1px solid var(--border); 
+  border-radius:10px;
+  background:var(--surface); 
+  color:var(--text); 
+  outline:none; 
+  width:100%; 
+  max-width: 100%;
+}
+.field input:focus, .field textarea:focus{
+  border-color:var(--brand);
+  box-shadow:0 0 0 3px color-mix(in oklab, var(--brand) 18%, transparent);
+}
+
+/* === Seed input-group: align + unify === */
+.seed-inline {
+  display: flex;
+  align-items: stretch;
+  gap: 0.1rem;
+  min-width: 0;
+}
+.seed-inline input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+/* the dice button becomes a right addon */
+.seed-inline .icon-btn {
+  padding: 0 .75rem;              /* horizontal only */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+/* hover/focus states consistent with inputs */
+.seed-inline input:focus + .icon-btn {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand) 18%, transparent);
+}
+/* disabled visual when Randomize seed is on */
+.seed-inline input:disabled,
+.seed-inline .icon-btn:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+/* tiny fix so the button never wraps below the input in tight grids */
+@media (max-width: 360px) {
+  .seed-inline { flex-wrap: nowrap; }
+}
+
+.icon-btn{ padding:.45rem .55rem; border:1px solid var(--border); border-radius:10px; background:var(--surface); cursor:pointer; }
+.icon-btn:hover{ background:var(--surface-alt); }
+
+/* Switches */
+.switch{ display:flex; align-items:center; gap:.6rem; line-height:1; color:var(--text); }
+.switch span{ color:var(--text); }
+.switch input{
+  appearance:none; inline-size:42px; block-size:24px; border-radius:999px;
+  background:linear-gradient(0deg, var(--border), var(--border));
+  position:relative; border:none; outline:none; cursor:pointer; transition:background .15s;
+  flex:0 0 auto;
+}
+.switch input::after{
+  content:''; position:absolute; top:3px; left:3px; inline-size:18px; block-size:18px;
+  border-radius:50%; background:var(--surface); box-shadow:0 1px 2px rgba(0,0,0,.15);
+  transform:translateX(0); transition:transform .15s;
+}
+.switch input:checked{
+  background:linear-gradient(0deg,
+    color-mix(in oklab, var(--brand) 55%, var(--surface)),
+    color-mix(in oklab, var(--brand) 55%, var(--surface)));
+}
+.switch input:checked::after{ transform:translateX(18px); }
+@media (prefers-reduced-motion: reduce){ .switch input, .switch input::after, .chev{ transition:none; } }
+
+/* Tooltip */
+[data-help]{ position:relative; cursor:help; }
+[data-help]::after{
+  content:attr(data-help); position:absolute; left:0; bottom:calc(100% + 6px);
+  white-space:pre-wrap; pointer-events:none; opacity:0; transform:translateY(4px);
+  transition:opacity .12s, transform .12s; background:#111; color:#fff;
+  font-size:.78rem; padding:.45rem .55rem; border-radius:6px; inline-size:min(280px, 80vw); z-index:2;
+}
+[data-help]:hover::after{ opacity:1; transform:translateY(0); }
+
+/* Results */
+.results ol{ padding-left:1.2rem; }
+
+/* === Advanced panel fixes (override earlier rules) === */
+
+/* Unified grid: auto-fill with a larger min track, prevents crowding/overlap */
+.adv-grid {
+  display: grid !important;
+  gap: 1rem !important;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+  align-items: start !important;
+  grid-auto-rows: minmax(min-content, max-content) !important;
+}
+.adv-grid > * { min-width: 0 !important; }  /* allow cells to shrink inside the track */
+
+/* Slightly more breathing room inside Advanced */
+.adv-wrap { padding: 0.75rem 1rem 1rem !important; }
+
+/* Ensure all field controls obey their grid cell width */
+.field { min-width: 0 !important; }
+.field input[type="number"],
+.field input[type="text"],
+.field textarea {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Labels/switches can wrap safely; long text won’t push boxes into each other */
+.switch { min-width: 0 !important; flex-wrap: wrap !important; }
+.switch span { overflow-wrap: anywhere !important; }
+
+/* --- Seed row exact alignment fixes (append at end) --- */
+
+/* 1) Kill the global 5px input top margin inside Advanced + seed row */
+.adv-grid input[type="text"],
+.adv-grid input[type="number"],
+.adv-grid textarea,
+.seed-inline input {
+  margin-top: 0 !important;
+}
+
+/* 2) Normalize the dice button metrics; avoid 'font: inherit' */
+.seed-inline .icon-btn {
+  /* undo any earlier font shorthand */
+  font: unset;                 /* cancels previous 'font: inherit' if present */
+  font-family: inherit;        /* keep your page font */
+  font-size: 1rem;             /* same as inputs */
+  line-height: 1;              /* no extra leading from the emoji */
+  padding: .5rem .6rem !important; /* identical to inputs */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: .95rem;
+}
+
+/* 3) Keep input + button on one line and same cross-size */
+.seed-inline {
+  display: flex;
+  align-items: stretch;        /* both take the same height */
+  flex-wrap: nowrap;
+  gap: .5rem;
+}
+
+/* Firefox inner focus can add height to buttons */
+button::-moz-focus-inner { border: 0; padding: 0; }
+
+/* Keep generic icon button styling consistent */
+.icon-btn {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  cursor: pointer;
+  font-size: .9rem;
+}
+.icon-btn:hover { background: var(--surface-alt); }
+
+/* On tiny phones, prevent the button wrapping under the input */
+@media (max-width: 360px) {
+  .seed-inline { flex-wrap: nowrap; }
+}
