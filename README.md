@@ -1,33 +1,36 @@
-# Primer Design App: Stem-Loop RT-qPCR for miRNA
+# Primer Design App: Two-tailed RT-qPCR for miRNA
 
-A specialized web application for designing **stem-loop pulsed reverse transcription (RT) primers** and specific **PCR primer pairs** for microRNA (miRNA) quantification. This tool implements thermodynamic modeling to ensure high specificity and efficiency in miRNA detection.
+A specialized web application for designing **Two-tailed RT primers** for highly specific microRNA (miRNA) quantification. This tool implements the thermodynamic modeling described by **Androvic et al. (2017)** to ensure high sensitivity and specificity.
 
 ## 🔬 Scientific Background
 
-MicroRNAs are short (~22 nt) non-coding RNAs that play critical roles in gene regulation. Due to their short length, standard PCR methods are insufficient. This application designs primers for the **Stem-Loop RT-qPCR** method, widely regarded as the gold standard for miRNA quantification due to its high sensitivity and specificity.
+MicroRNAs are short (~22 nt) non-coding RNAs. Standard RT-qPCR methods often struggle with specificity due to the short length of the target. This application implements the **Two-tailed RT-qPCR** approach, which offers superior specificity by using a novel RT primer design.
 
-### The Method
-1.  **Stem-Loop RT Primer**: A specifically designed hairpin oligonucleotide binds to the 3' end of the mature miRNA. The stem-loop structure stabilizes the interaction and prevents binding to precursor molecules (pre-miRNA/pri-miRNA), enhancing specificity.
-2.  **Reverse Transcription**: The miRNA is reverse transcribed into cDNA.
-3.  **qPCR**: The cDNA is amplified using a specific **Forward Primer** (matching the miRNA sequence) and a universal or specific **Reverse Primer** (binding to the stem-loop structure).
+### The Method: Two-tailed RT-qPCR
+Unlike standard stem-loop primers, the **Two-tailed RT primer** contains two hemiprobes separated by a hairpin structure:
+1.  **3' Hemiprobe**: Binds to the 3' end of the miRNA.
+2.  **5' Hemiprobe**: Binds to the 5' end (or a central region) of the miRNA.
+3.  **Hairpin Tether**: A stable stem-loop structure connects the two hemiprobes, preventing them from binding to each other or forming non-specific products.
+
+This "clamp" mechanism ensures that the primer only extends when *both* hemiprobes hybridize to the target miRNA, significantly increasing specificity and allowing discrimination of homologous miRNAs with single-nucleotide differences.
 
 ## 🧮 Algorithmic Implementation
 
-The application uses rigorous thermodynamic calculations to predict primer-template stability and secondary structures.
+The application uses rigorous thermodynamic calculations to design the two hemiprobes and the connecting hairpin.
 
 ### 1. Thermodynamic Modeling
 Melting temperatures ($T_m$) and Gibbs free energy ($\Delta G$) changes are calculated using the **Nearest-Neighbor (NN) Model** with parameters from **SantaLucia et al. (1998)**.
-*   **$\Delta G$ (Gibbs Free Energy)**: Determines the stability of the primer-template duplex. More negative values indicate stronger binding.
-*   **$T_m$ (Melting Temperature)**: Calculated correcting for salt ($Na^+$, $Mg^{2+}$) and oligonucleotide concentrations using the entropy ($\Delta S$) and enthalpy ($\Delta H$) of adjacent base pairs.
+*   **$\Delta G$ (Gibbs Free Energy)**: Used to optimize the binding stability of both the 3' and 5' hemiprobes.
+*   **$T_m$ (Melting Temperature)**: Calculated correcting for salt ($Na^+$, $Mg^{2+}$) and oligonucleotide concentrations.
 
-### 2. Design Constraints & Heuristics
-*   **3' End Stability**: The algorithm specifically optimizes the $\Delta G$ of the last 5 nucleotides at the 3' end to prevent non-specific priming (the "GC clamp" effect).
-*   **Hairpin Stability**: The stem-loop structure is verified to ensure it forms a stable hairpin at the RT temperature (typically 42°C) but unfolds during the PCR denaturation step (95°C).
-*   **Secondary Structure Check**: (Optional) Integration with **ViennaRNA** allows for folding predictions to avoid internal hairpins or self-dimers in the primers themselves.
+### 2. Design Constraints
+*   **Hemiprobe Balance**: The algorithm searches for optimal lengths for both the 3' and 5' hemiprobes to ensure balanced binding stability within a user-defined $\Delta G$ window.
+*   **Structure Check**: The hairpin linker is designed to be stable at the RT temperature (42°C) but accessible for the polymerase.
+*   **Specificity**: The split-probe design minimizes off-target binding to precursor miRNAs or other small RNAs.
 
 ## ✨ Features
 
-*   **Automated Stem-Loop Design**: Generates RT primers with customizable stem and loop sequences.
+*   **Two-tailed Primer Design**: Automated generation of RT primers with dual binding sites.
 *   **Thermodynamic Filtering**: Filters candidates based on $\Delta G$, $T_m$, and GC content windows.
 *   **Batch Processing**: Design primers for multiple miRNA sequences simultaneously.
 *   **miRNA Database**: Built-in lookup for standard miRBase entries.
@@ -64,8 +67,8 @@ This app is configured for easy deployment on **Render**.
 
 ## 📚 References
 
-1.  **SantaLucia, J. Jr. (1998).** "A unified view of polymer, dumbbell, and oligonucleotide DNA nearest-neighbor thermodynamics." *Proceedings of the National Academy of Sciences*, 95(4), 1460-1465.
-2.  **Chen, C., et al. (2005).** "Real-time quantification of microRNAs by stem-loop RT-PCR." *Nucleic Acids Research*, 33(20), e179.
+1.  **Androvic, P., Valihrach, L., Elling, J., Sjoback, R., & Kubista, M. (2017).** "Two-tailed RT-qPCR: a novel method for highly accurate miRNA quantification." *Nucleic Acids Research*, 45(15), e144. [https://doi.org/10.1093/nar/gkx588](https://doi.org/10.1093/nar/gkx588)
+2.  **SantaLucia, J. Jr. (1998).** "A unified view of polymer, dumbbell, and oligonucleotide DNA nearest-neighbor thermodynamics." *Proceedings of the National Academy of Sciences*, 95(4), 1460-1465.
 
 ## ✅ License
 Copyright © 2025 Ruslan Klassen. All rights reserved.
